@@ -1,0 +1,43 @@
+{
+  "name": "grouped6_opt",
+  "dtype": "FP16",
+  "shape": [
+    8,
+    8,
+    8
+  ],
+  "launches": 6,
+  "ub_bytes_per_block": 2560,
+  "blocks": [
+    1,
+    4,
+    8
+  ],
+  "twiddle_specialized": true,
+  "arithmetic": "native half vector Add/Sub/Mul/Muls",
+  "ops": [
+    {
+      "axis": 2
+    },
+    {
+      "axis": 1
+    },
+    {
+      "axis": 0,
+      "mul": true
+    },
+    {
+      "axis": 0,
+      "inverse": true
+    },
+    {
+      "axis": 1,
+      "inverse": true
+    },
+    {
+      "axis": 2,
+      "inverse": true,
+      "scale": true
+    }
+  ]
+}

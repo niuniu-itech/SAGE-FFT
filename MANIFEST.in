@@ -1,0 +1,10 @@
+include .env.example .gitignore .gitattributes .editorconfig
+include AUTHORS.md README.zh-CN.md CONTRIBUTING.md LICENSING.md SECURITY.md
+recursive-include docs *.md
+recursive-include examples *.py *.json
+recursive-include scripts *.py
+recursive-include benchmarks *.py *.cpp *.cu CMakeLists.txt *.md *.json *.in
+recursive-include tests *.py
+recursive-include .github *.yml *.md
+global-exclude __pycache__ *.py[cod]
+recursive-include assets *.svg *.png

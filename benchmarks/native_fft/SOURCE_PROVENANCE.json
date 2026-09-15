@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "destination": "native_fft_pipeline.cpp",
+      "sha256": "5fc1b57338840821cd1d0204f2df38220e6ac92c10680d4fb0d93b61c582ddd8"
+    },
+    {
+      "destination": "native_fft_builtin_norm.cpp",
+      "sha256": "959df2d36bb9383dabf359ddcc087387babe47812cb828c82f6160dfa63c4fae"
+    }
+  ]
+}

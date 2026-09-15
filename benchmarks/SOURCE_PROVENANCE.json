@@ -1,0 +1,32 @@
+{
+  "fp16/staged20/kernels.cpp": {
+    "release_sha256": "f9161549c92bab494b1600a1ec2c4ebfb8f0a9f3750fe891f50e3f716eb15733"
+  },
+  "fp16/grouped6/kernels.cpp": {
+    "release_sha256": "9f4c08953e630a849796850aac7250dfc33224b8f13d03acb1ad3b3bee9fc13f"
+  },
+  "fp16/fused5/kernels.cpp": {
+    "release_sha256": "6255407c6d1a7ccc6d1117b1e0af1b87d3af737fc3ffcf47816ceaf37bbb5868"
+  },
+  "fp16/fused3/kernels.cpp": {
+    "release_sha256": "cc2c71daff9fd8b457cd505c47c9bef108ed5683d2b81a81ef2fe26ea3ceec1e"
+  },
+  "fp16/grouped6_opt/kernels.cpp": {
+    "release_sha256": "fa7440abcd42d566078555ccf84179e716dbc84a3b40f6ad9ab40d6969ed976c"
+  },
+  "fp16/fused3_opt/kernels.cpp": {
+    "release_sha256": "5936f8e3089b388cac12c4d211dbfc7ce40b88242c53d0ada6f23e6e81792852"
+  },
+  "fp32/staged20/kernels.cpp": {
+    "release_sha256": "3356ab1b9930106fc11f8ca8ed35960b78aa645d2f5693c1ac4ff94a57a2d30c"
+  },
+  "fp32/sage6/kernels.cpp": {
+    "release_sha256": "3567a0758b5d65b1a3e2dc5ead200ff2e3bc8cf17652d054cec32b0f45f83021"
+  },
+  "fp32/cuda/diagnose.cu": {
+    "release_sha256": "3b8bd38fa14704b60c7d2f1d9a4dc9489f1d049efcea63157d42a933378ba104"
+  },
+  "fp16/cuda/fft.cu": {
+    "release_sha256": "e23fffbe12c782abd926baacb546861489b0da0000f6adcfdd5b2cc26e5250cd"
+  }
+}

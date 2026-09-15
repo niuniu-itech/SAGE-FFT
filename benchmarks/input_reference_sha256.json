@@ -1,0 +1,22 @@
+{
+  "fp32": {
+    "input_1/x.bin": "b584392ae9341a7d08b5126c3c2d01210bf734823835bbf75f88e99c450aeabe",
+    "input_1/h.bin": "96b36456387ff808c9bb7a6aeed405f8f409a659f45d5ba6f1bc03f61545e9d5",
+    "input_2/x.bin": "a579e7d927ae158cca1cd2386542ee2d28177a4de58b33bb095170b4399ec9f7",
+    "input_2/h.bin": "0886795fcc08c1d699e0086ea212971562611c34a633a9affea80a7cd6b2a1e7",
+    "input_3/x.bin": "7ae4451f169d58860234656f3500f962f03a3735dd5165b9b946de2cb4dbd5a9",
+    "input_3/h.bin": "fabd912aa1112687194522539cb30df7d1c912d0da6b872a467694e4b2005984"
+  },
+  "fp16": {
+    "input_1/x.bin": "b931f72813be1286d7b07ebe29349c95df2ea4dc5688d2ca164b1abbbaf54be2",
+    "input_1/h.bin": "7e4cd9dad5ab64e575afaf1f3eb841223b37864f07637f62a13f4187b2af97d3",
+    "input_2/x.bin": "9f7cfb987be705784d574bdb53ccbd014b64c3bf55362711ae0b242ec08fdc41",
+    "input_2/h.bin": "86b8ba0893724ef4baaf85b147cc9398163d9310bea97d1d9a992ed5da7577ed",
+    "input_3/x.bin": "46f110ab9e4d26bd029670191ecda7777f8f6dcf2aa7735a2d5c9e04d72831a1",
+    "input_3/h.bin": "995aa411393cf61e7f59ea4c37e5cd5a5ee303450d99c8f4fef68cec165e4c4e",
+    "input_4/x.bin": "0518c328a97c63fa494ed6eb6050db5274d3c633fc64eff9b410e1cad4a134be",
+    "input_4/h.bin": "960eda3b215854de01d6a9331631dc3387e6608dc8cfcdd99f3bef1d6258e26a",
+    "input_5/x.bin": "1c8d6ba10884bfe84b1d24ac4a1adb2897d3b3c9cd6c02261f694cdd269f7b8f",
+    "input_5/h.bin": "b1e797a48d2a57849aa95f145f05f7b148c04aef319e6835126b82049b6351d9"
+  }
+}

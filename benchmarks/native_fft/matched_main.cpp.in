@@ -1,0 +1,206 @@
+// Generated matched native-baseline control. Device kernels are unchanged.
+#include <acl/acl.h>
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <limits>
+#include <string>
+#include <vector>
+@INCLUDES@
+
+constexpr int kN = @N@;
+constexpr int kLaunches = @LAUNCHES@;
+constexpr size_t kElements = size_t(kN) * kN * kN;
+constexpr size_t kScalars = 2 * kElements;
+constexpr size_t kBytes = kScalars * sizeof(float);
+constexpr const char* kVariant = "@VARIANT@";
+constexpr const char* kKernelSHA = "@KERNEL_SHA@";
+
+void ck(aclError error, const char* operation) {
+    if (error != ACL_SUCCESS) {
+        std::fprintf(stderr, "ACL %d %s\n", error, operation);
+        std::exit(2);
+    }
+}
+
+int integer(const char* text, int low, int high) {
+    char* end = nullptr;
+    const long value = std::strtol(text, &end, 10);
+    if (end == text || *end || value < low || value > high) {
+        std::fprintf(stderr, "invalid integer argument: %s\n", text);
+        std::exit(1);
+    }
+    return static_cast<int>(value);
+}
+
+template<typename Scalar> std::vector<Scalar> read_exact(const std::string& path) {
+    std::vector<Scalar> values(kScalars);
+    const size_t bytes = values.size() * sizeof(Scalar);
+    std::ifstream file(path, std::ios::binary);
+    if (!file.read(reinterpret_cast<char*>(values.data()), bytes) || file.peek() != EOF) {
+        std::fprintf(stderr, "expected exactly %zu bytes: %s\n", bytes, path.c_str());
+        std::exit(3);
+    }
+    for (const auto value : values) {
+        if (!std::isfinite(value)) {
+            std::fprintf(stderr, "nonfinite input/reference: %s\n", path.c_str());
+            std::exit(3);
+        }
+    }
+    return values;
+}
+
+void save(const std::string& path, const std::vector<float>& values) {
+    std::ofstream file(path, std::ios::binary);
+    file.write(reinterpret_cast<const char*>(values.data()), kBytes);
+    file.close();
+    if (!file) {
+        std::fprintf(stderr, "cannot write %s\n", path.c_str());
+        std::exit(3);
+    }
+}
+
+struct Accuracy {
+    bool passed = true;
+    bool finite = true;
+    size_t failed_elements = 0;
+    double max_abs = 0;
+    double relative_l2 = 0;
+};
+
+Accuracy validate(const std::vector<float>& actual, const std::vector<double>& reference) {
+    Accuracy result;
+    double error_square = 0;
+    double reference_square = 0;
+    for (size_t i = 0; i < kElements; ++i) {
+        const double real = actual[2*i];
+        const double imag = actual[2*i+1];
+        const double rr = reference[2*i];
+        const double ri = reference[2*i+1];
+        const bool finite = std::isfinite(real) && std::isfinite(imag);
+        const double error = std::hypot(real - rr, imag - ri);
+        const double magnitude = std::hypot(rr, ri);
+        const bool passed = finite && error <= 1e-4 + 1e-4 * magnitude;
+        result.finite = result.finite && finite;
+        result.passed = result.passed && passed;
+        result.failed_elements += passed ? 0 : 1;
+        if (finite) result.max_abs = std::max(result.max_abs, error);
+        error_square += error * error;
+        reference_square += magnitude * magnitude;
+    }
+    result.relative_l2 = reference_square > 0 ? std::sqrt(error_square/reference_square)
+        : (error_square == 0 ? 0 : std::numeric_limits<double>::infinity());
+    if (!result.finite) result.max_abs = std::numeric_limits<double>::infinity();
+    return result;
+}
+
+void number(double value) {
+    if (std::isfinite(value)) std::printf("%.12g", value);
+    else std::printf("null");
+}
+
+void accuracy_json(const Accuracy& accuracy) {
+    std::printf("{\"passed\":%s,\"finite\":%s,\"failed_elements\":%zu,\"max_abs\":",
+                accuracy.passed ? "true" : "false", accuracy.finite ? "true" : "false",
+                accuracy.failed_elements);
+    number(accuracy.max_abs);
+    std::printf(",\"relative_l2\":"); number(accuracy.relative_l2);
+    std::printf("}");
+}
+
+int main(int argc, char** argv) {
+    if (argc != 7 && argc != 8) {
+        std::fprintf(stderr, "usage: sage_fft INPUT_DIR OUTPUTPREFIX N ITERS WARMUPS GROUPS [BLOCKS]\n");
+        return 1;
+    }
+    const int n = integer(argv[3], 1, 1024);
+    const int iterations = integer(argv[4], 1, 1000000);
+    const int warmups = integer(argv[5], 0, 1000000);
+    const int groups = integer(argv[6], 1, 10000);
+    const int blocks = argc == 8 ? integer(argv[7], 1, 8) : 8;
+    if (n != kN || (blocks != 1 && blocks != 4 && blocks != 8)) {
+        std::fprintf(stderr, "this binary requires N=%d and BLOCKS in {1,4,8}\n", kN);
+        return 1;
+    }
+    if (std::getenv("LD_PRELOAD") && std::string(std::getenv("LD_PRELOAD")).find("residency_trace") != std::string::npos) {
+        std::fprintf(stderr, "refusing latency measurement with residency_trace preloaded\n");
+        return 1;
+    }
+    const std::string input_dir = argv[1];
+    const std::string output_prefix = argv[2];
+    const auto xh = read_exact<float>(input_dir + "/x.bin");
+    const auto hh = read_exact<float>(input_dir + "/h.bin");
+    const auto reference = read_exact<double>(input_dir + "/reference.bin");
+    ck(aclInit(nullptr), "init");
+    ck(aclrtSetDevice(0), "device");
+    aclrtStream stream = nullptr;
+    ck(aclrtCreateStream(&stream), "stream");
+    void *x = nullptr, *h = nullptr, *b = nullptr, *c = nullptr;
+    ck(aclrtMalloc(&x, kBytes, ACL_MEM_MALLOC_HUGE_FIRST), "allocate x");
+    ck(aclrtMalloc(&h, kBytes, ACL_MEM_MALLOC_HUGE_FIRST), "allocate h");
+    ck(aclrtMalloc(&b, kBytes, ACL_MEM_MALLOC_HUGE_FIRST), "allocate b");
+    ck(aclrtMalloc(&c, kBytes, ACL_MEM_MALLOC_HUGE_FIRST), "allocate c");
+    ck(aclrtMemcpy(x, kBytes, xh.data(), kBytes, ACL_MEMCPY_HOST_TO_DEVICE), "upload x");
+    ck(aclrtMemcpy(h, kBytes, hh.data(), kBytes, ACL_MEMCPY_HOST_TO_DEVICE), "upload h");
+    void* result = nullptr;
+    auto run = [&]() {
+        // Each full pipeline reads the same immutable x and h. Only b/c are outputs.
+        void* src = x;
+        void* dst = b;
+@CALLS@
+        result = src;
+    };
+    auto cleanup = [&]() {
+        ck(aclrtFree(x), "free x"); ck(aclrtFree(h), "free h");
+        ck(aclrtFree(b), "free b"); ck(aclrtFree(c), "free c");
+        ck(aclrtDestroyStream(stream), "destroy stream");
+        ck(aclrtResetDevice(0), "reset device"); ck(aclFinalize(), "finalize");
+    };
+    std::vector<float> output(kScalars);
+    auto download = [&](const std::string& suffix) {
+        ck(aclrtMemcpy(output.data(), kBytes, result, kBytes, ACL_MEMCPY_DEVICE_TO_HOST), "download output");
+        save(output_prefix + suffix, output);
+        return validate(output, reference);
+    };
+    run();
+    ck(aclrtSynchronizeStream(stream), "before validation sync");
+    const Accuracy before = download(".before.bin");
+    if (!before.passed) {
+        std::printf("{\"variant\":\"%s\",\"n\":%d,\"correctness_before\":", kVariant, kN);
+        accuracy_json(before);
+        std::printf(",\"timing_skipped\":true,\"reason\":\"pre_timing_correctness_failed\"}\n");
+        cleanup();
+        return 4;
+    }
+    for (int i = 0; i < warmups; ++i) run();
+    ck(aclrtSynchronizeStream(stream), "warmup sync");
+    std::vector<double> samples;
+    samples.reserve(groups);
+    for (int group = 0; group < groups; ++group) {
+        ck(aclrtSynchronizeStream(stream), "pre group sync");
+        const auto begin = std::chrono::steady_clock::now();
+        for (int i = 0; i < iterations; ++i) run();
+        ck(aclrtSynchronizeStream(stream), "timing sync");
+        const auto end = std::chrono::steady_clock::now();
+        samples.push_back(std::chrono::duration<double, std::micro>(end - begin).count()/iterations);
+    }
+    const Accuracy after = download(".after.bin");
+    std::printf("{\"schema_version\":1,\"variant\":\"%s\",\"backend\":\"AscendC_AI_Core\","
+                "\"timing_method\":\"host_batch_submit_sync\",\"unit\":\"us_per_complete_pipeline\","
+                "\"precision\":\"complex64\",\"n\":%d,\"shape\":[%d,%d,%d],\"batch\":1,"
+                "\"warmup\":%d,\"groups\":%d,\"iterations\":%d,\"blocks\":%d,"
+                "\"launches\":%d,\"kernel_sha256\":\"%s\",\"input_resident\":true,"
+                "\"input_immutable\":true,\"atol\":0.0001,\"rtol\":0.0001,"
+                "\"correctness_before\":", kVariant, kN, kN, kN, kN, warmups, groups,
+                iterations, blocks, kLaunches, kKernelSHA);
+    accuracy_json(before);
+    std::printf(",\"correctness_after\":"); accuracy_json(after);
+    std::printf(",\"correctness_passed\":%s,\"samples_us\":[", after.passed ? "true" : "false");
+    for (size_t i = 0; i < samples.size(); ++i) std::printf("%s%.9f", i ? "," : "", samples[i]);
+    std::printf("]}\n");
+    cleanup();
+    return after.passed ? 0 : 4;
+}

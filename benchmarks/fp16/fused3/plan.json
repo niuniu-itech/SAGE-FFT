@@ -1,0 +1,35 @@
+{
+  "name": "fused3",
+  "dtype": "FP16",
+  "shape": [
+    8,
+    8,
+    8
+  ],
+  "launches": 3,
+  "ub_bytes_per_block": 2560,
+  "blocks": [
+    1,
+    4,
+    8
+  ],
+  "twiddle_specialized": false,
+  "arithmetic": "native half vector Add/Sub/Mul/Muls",
+  "ops": [
+    {
+      "axis": 2,
+      "second": "transpose"
+    },
+    {
+      "axis": 0,
+      "mul": true,
+      "second": "inverse"
+    },
+    {
+      "axis": 1,
+      "inverse": true,
+      "second": "transpose",
+      "scale": true
+    }
+  ]
+}

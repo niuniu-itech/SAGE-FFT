@@ -1,0 +1,134 @@
+{
+  "name": "staged20",
+  "dtype": "FP16",
+  "shape": [
+    8,
+    8,
+    8
+  ],
+  "launches": 20,
+  "ub_bytes_per_block": 2560,
+  "blocks": [
+    1,
+    4,
+    8
+  ],
+  "twiddle_specialized": false,
+  "arithmetic": "native half vector Add/Sub/Mul/Muls",
+  "ops": [
+    {
+      "axis": 2,
+      "first": 0,
+      "last": 1,
+      "inverse": false
+    },
+    {
+      "axis": 2,
+      "first": 1,
+      "last": 2,
+      "inverse": false
+    },
+    {
+      "axis": 2,
+      "first": 2,
+      "last": 3,
+      "inverse": false
+    },
+    {
+      "axis": 1,
+      "first": 0,
+      "last": 1,
+      "inverse": false
+    },
+    {
+      "axis": 1,
+      "first": 1,
+      "last": 2,
+      "inverse": false
+    },
+    {
+      "axis": 1,
+      "first": 2,
+      "last": 3,
+      "inverse": false
+    },
+    {
+      "axis": 0,
+      "first": 0,
+      "last": 1,
+      "inverse": false
+    },
+    {
+      "axis": 0,
+      "first": 1,
+      "last": 2,
+      "inverse": false
+    },
+    {
+      "axis": 0,
+      "first": 2,
+      "last": 3,
+      "inverse": false
+    },
+    {
+      "pointwise": "multiply"
+    },
+    {
+      "axis": 0,
+      "first": 0,
+      "last": 1,
+      "inverse": true
+    },
+    {
+      "axis": 0,
+      "first": 1,
+      "last": 2,
+      "inverse": true
+    },
+    {
+      "axis": 0,
+      "first": 2,
+      "last": 3,
+      "inverse": true
+    },
+    {
+      "axis": 1,
+      "first": 0,
+      "last": 1,
+      "inverse": true
+    },
+    {
+      "axis": 1,
+      "first": 1,
+      "last": 2,
+      "inverse": true
+    },
+    {
+      "axis": 1,
+      "first": 2,
+      "last": 3,
+      "inverse": true
+    },
+    {
+      "axis": 2,
+      "first": 0,
+      "last": 1,
+      "inverse": true
+    },
+    {
+      "axis": 2,
+      "first": 1,
+      "last": 2,
+      "inverse": true
+    },
+    {
+      "axis": 2,
+      "first": 2,
+      "last": 3,
+      "inverse": true
+    },
+    {
+      "pointwise": "scale"
+    }
+  ]
+}

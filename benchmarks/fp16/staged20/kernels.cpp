@@ -1,0 +1,1009 @@
+#include "kernel_operator.h"
+using namespace AscendC;
+extern "C" __global__ __aicore__ void fft_step_0(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=l*8+((k&1)*4+(k&2)+((k&4)/4));r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[16],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[16],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[16],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[16],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[16],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[16],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[48],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[48],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[48],r[32],t,16);PipeBarrier<PIPE_V>();
+Add(r[32],r[32],t,16);PipeBarrier<PIPE_V>();
+Sub(i[48],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[32],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[80],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[80],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[80],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[80],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[80],r[64],t,16);PipeBarrier<PIPE_V>();
+Add(r[64],r[64],t,16);PipeBarrier<PIPE_V>();
+Sub(i[80],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[64],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[96],t,16);PipeBarrier<PIPE_V>();
+Add(r[96],r[96],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[96],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[96],i[96],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=l*8+k;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_1(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=l*8+k;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[32],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[32],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[32],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[32],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[32],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[32],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[48],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[48],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[48],r[16],t,16);PipeBarrier<PIPE_V>();
+Add(r[16],r[16],t,16);PipeBarrier<PIPE_V>();
+Sub(i[48],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[96],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[96],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[96],r[64],t,16);PipeBarrier<PIPE_V>();
+Add(r[64],r[64],t,16);PipeBarrier<PIPE_V>();
+Sub(i[96],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[64],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[80],t,16);PipeBarrier<PIPE_V>();
+Add(r[80],r[80],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[80],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[80],i[80],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=l*8+k;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_2(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=l*8+k;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[64],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[64],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[64],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[64],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[64],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[64],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[80],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[80],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[80],r[16],t,16);PipeBarrier<PIPE_V>();
+Add(r[16],r[16],t,16);PipeBarrier<PIPE_V>();
+Sub(i[80],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[96],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[96],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[96],r[32],t,16);PipeBarrier<PIPE_V>();
+Add(r[32],r[32],t,16);PipeBarrier<PIPE_V>();
+Sub(i[96],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[32],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[48],t,16);PipeBarrier<PIPE_V>();
+Add(r[48],r[48],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[48],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[48],i[48],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=l*8+k;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_3(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(((k&1)*4+(k&2)+((k&4)/4)))*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[16],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[16],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[16],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[16],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[16],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[16],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[48],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[48],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[48],r[32],t,16);PipeBarrier<PIPE_V>();
+Add(r[32],r[32],t,16);PipeBarrier<PIPE_V>();
+Sub(i[48],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[32],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[80],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[80],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[80],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[80],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[80],r[64],t,16);PipeBarrier<PIPE_V>();
+Add(r[64],r[64],t,16);PipeBarrier<PIPE_V>();
+Sub(i[80],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[64],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[96],t,16);PipeBarrier<PIPE_V>();
+Add(r[96],r[96],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[96],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[96],i[96],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_4(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(k)*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[32],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[32],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[32],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[32],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[32],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[32],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[48],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[48],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[48],r[16],t,16);PipeBarrier<PIPE_V>();
+Add(r[16],r[16],t,16);PipeBarrier<PIPE_V>();
+Sub(i[48],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[96],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[96],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[96],r[64],t,16);PipeBarrier<PIPE_V>();
+Add(r[64],r[64],t,16);PipeBarrier<PIPE_V>();
+Sub(i[96],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[64],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[80],t,16);PipeBarrier<PIPE_V>();
+Add(r[80],r[80],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[80],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[80],i[80],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_5(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(k)*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[64],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[64],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[64],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[64],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[64],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[64],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[80],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[80],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[80],r[16],t,16);PipeBarrier<PIPE_V>();
+Add(r[16],r[16],t,16);PipeBarrier<PIPE_V>();
+Sub(i[80],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[96],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[96],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[96],r[32],t,16);PipeBarrier<PIPE_V>();
+Add(r[32],r[32],t,16);PipeBarrier<PIPE_V>();
+Sub(i[96],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[32],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[48],t,16);PipeBarrier<PIPE_V>();
+Add(r[48],r[48],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[48],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[48],i[48],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_6(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++){DataCopy(raw[k*16],x[2*(k*64+tile*8)],16);}
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(((k&1)*4+(k&2)+((k&4)/4)))*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[16],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[16],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[16],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[16],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[16],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[16],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[48],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[48],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[48],r[32],t,16);PipeBarrier<PIPE_V>();
+Add(r[32],r[32],t,16);PipeBarrier<PIPE_V>();
+Sub(i[48],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[32],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[80],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[80],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[80],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[80],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[80],r[64],t,16);PipeBarrier<PIPE_V>();
+Add(r[64],r[64],t,16);PipeBarrier<PIPE_V>();
+Sub(i[80],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[64],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[96],t,16);PipeBarrier<PIPE_V>();
+Add(r[96],r[96],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[96],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[96],i[96],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)DataCopy(y[2*(k*64+tile*8)],raw[k*16],16);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_7(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++){DataCopy(raw[k*16],x[2*(k*64+tile*8)],16);}
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(k)*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[32],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[32],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[32],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[32],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[32],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[32],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[48],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[48],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[48],r[16],t,16);PipeBarrier<PIPE_V>();
+Add(r[16],r[16],t,16);PipeBarrier<PIPE_V>();
+Sub(i[48],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[96],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[96],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[96],r[64],t,16);PipeBarrier<PIPE_V>();
+Add(r[64],r[64],t,16);PipeBarrier<PIPE_V>();
+Sub(i[96],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[64],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[80],t,16);PipeBarrier<PIPE_V>();
+Add(r[80],r[80],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[80],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[80],i[80],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)DataCopy(y[2*(k*64+tile*8)],raw[k*16],16);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_8(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++){DataCopy(raw[k*16],x[2*(k*64+tile*8)],16);}
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(k)*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[64],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[64],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[64],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[64],(half)-0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[64],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[64],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[80],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[80],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[80],r[16],t,16);PipeBarrier<PIPE_V>();
+Add(r[16],r[16],t,16);PipeBarrier<PIPE_V>();
+Sub(i[80],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[96],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[96],(half)-1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[96],r[32],t,16);PipeBarrier<PIPE_V>();
+Add(r[32],r[32],t,16);PipeBarrier<PIPE_V>();
+Sub(i[96],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[32],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[48],t,16);PipeBarrier<PIPE_V>();
+Add(r[48],r[48],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[48],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[48],i[48],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)DataCopy(y[2*(k*64+tile*8)],raw[k*16],16);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_9(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);DataCopy(wh,h[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(k)*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){hr.SetValue(k*16+l,wh.GetValue(2*(k*8+l)));hi.SetValue(k*16+l,wh.GetValue(2*(k*8+l)+1));}
+PipeBarrier<PIPE_ALL>();
+Mul(t,r[0],hr[0],16);PipeBarrier<PIPE_V>();
+Mul(t[32],i[0],hi[0],16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Mul(t[16],r[0],hi[0],16);PipeBarrier<PIPE_V>();
+Mul(t[48],i[0],hr[0],16);PipeBarrier<PIPE_V>();
+Add(i[0],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Adds(r[0],t,(half)0,16);PipeBarrier<PIPE_V>();
+Mul(t,r[16],hr[16],16);PipeBarrier<PIPE_V>();
+Mul(t[32],i[16],hi[16],16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Mul(t[16],r[16],hi[16],16);PipeBarrier<PIPE_V>();
+Mul(t[48],i[16],hr[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Adds(r[16],t,(half)0,16);PipeBarrier<PIPE_V>();
+Mul(t,r[32],hr[32],16);PipeBarrier<PIPE_V>();
+Mul(t[32],i[32],hi[32],16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Mul(t[16],r[32],hi[32],16);PipeBarrier<PIPE_V>();
+Mul(t[48],i[32],hr[32],16);PipeBarrier<PIPE_V>();
+Add(i[32],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Adds(r[32],t,(half)0,16);PipeBarrier<PIPE_V>();
+Mul(t,r[48],hr[48],16);PipeBarrier<PIPE_V>();
+Mul(t[32],i[48],hi[48],16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Mul(t[16],r[48],hi[48],16);PipeBarrier<PIPE_V>();
+Mul(t[48],i[48],hr[48],16);PipeBarrier<PIPE_V>();
+Add(i[48],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Adds(r[48],t,(half)0,16);PipeBarrier<PIPE_V>();
+Mul(t,r[64],hr[64],16);PipeBarrier<PIPE_V>();
+Mul(t[32],i[64],hi[64],16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Mul(t[16],r[64],hi[64],16);PipeBarrier<PIPE_V>();
+Mul(t[48],i[64],hr[64],16);PipeBarrier<PIPE_V>();
+Add(i[64],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Adds(r[64],t,(half)0,16);PipeBarrier<PIPE_V>();
+Mul(t,r[80],hr[80],16);PipeBarrier<PIPE_V>();
+Mul(t[32],i[80],hi[80],16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Mul(t[16],r[80],hi[80],16);PipeBarrier<PIPE_V>();
+Mul(t[48],i[80],hr[80],16);PipeBarrier<PIPE_V>();
+Add(i[80],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Adds(r[80],t,(half)0,16);PipeBarrier<PIPE_V>();
+Mul(t,r[96],hr[96],16);PipeBarrier<PIPE_V>();
+Mul(t[32],i[96],hi[96],16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Mul(t[16],r[96],hi[96],16);PipeBarrier<PIPE_V>();
+Mul(t[48],i[96],hr[96],16);PipeBarrier<PIPE_V>();
+Add(i[96],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Adds(r[96],t,(half)0,16);PipeBarrier<PIPE_V>();
+Mul(t,r[112],hr[112],16);PipeBarrier<PIPE_V>();
+Mul(t[32],i[112],hi[112],16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Mul(t[16],r[112],hi[112],16);PipeBarrier<PIPE_V>();
+Mul(t[48],i[112],hr[112],16);PipeBarrier<PIPE_V>();
+Add(i[112],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Adds(r[112],t,(half)0,16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_10(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++){DataCopy(raw[k*16],x[2*(k*64+tile*8)],16);}
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(((k&1)*4+(k&2)+((k&4)/4)))*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[16],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[16],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[16],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[16],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[16],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[16],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[48],r[32],t,16);PipeBarrier<PIPE_V>();
+Add(r[32],r[32],t,16);PipeBarrier<PIPE_V>();
+Sub(i[48],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[32],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[80],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[80],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[80],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[80],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[80],r[64],t,16);PipeBarrier<PIPE_V>();
+Add(r[64],r[64],t,16);PipeBarrier<PIPE_V>();
+Sub(i[80],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[64],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[96],t,16);PipeBarrier<PIPE_V>();
+Add(r[96],r[96],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[96],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[96],i[96],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)DataCopy(y[2*(k*64+tile*8)],raw[k*16],16);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_11(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++){DataCopy(raw[k*16],x[2*(k*64+tile*8)],16);}
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(k)*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[32],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[32],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[32],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[32],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[32],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[32],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[48],r[16],t,16);PipeBarrier<PIPE_V>();
+Add(r[16],r[16],t,16);PipeBarrier<PIPE_V>();
+Sub(i[48],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[96],r[64],t,16);PipeBarrier<PIPE_V>();
+Add(r[64],r[64],t,16);PipeBarrier<PIPE_V>();
+Sub(i[96],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[64],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[80],t,16);PipeBarrier<PIPE_V>();
+Add(r[80],r[80],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[80],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[80],i[80],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)DataCopy(y[2*(k*64+tile*8)],raw[k*16],16);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_12(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++){DataCopy(raw[k*16],x[2*(k*64+tile*8)],16);}
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(k)*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[64],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[64],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[64],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[64],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[64],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[64],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[80],r[16],t,16);PipeBarrier<PIPE_V>();
+Add(r[16],r[16],t,16);PipeBarrier<PIPE_V>();
+Sub(i[80],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[96],r[32],t,16);PipeBarrier<PIPE_V>();
+Add(r[32],r[32],t,16);PipeBarrier<PIPE_V>();
+Sub(i[96],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[32],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[48],t,16);PipeBarrier<PIPE_V>();
+Add(r[48],r[48],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[48],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[48],i[48],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)DataCopy(y[2*(k*64+tile*8)],raw[k*16],16);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_13(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(((k&1)*4+(k&2)+((k&4)/4)))*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[16],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[16],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[16],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[16],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[16],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[16],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[48],r[32],t,16);PipeBarrier<PIPE_V>();
+Add(r[32],r[32],t,16);PipeBarrier<PIPE_V>();
+Sub(i[48],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[32],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[80],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[80],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[80],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[80],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[80],r[64],t,16);PipeBarrier<PIPE_V>();
+Add(r[64],r[64],t,16);PipeBarrier<PIPE_V>();
+Sub(i[80],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[64],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[96],t,16);PipeBarrier<PIPE_V>();
+Add(r[96],r[96],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[96],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[96],i[96],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_14(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(k)*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[32],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[32],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[32],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[32],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[32],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[32],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[48],r[16],t,16);PipeBarrier<PIPE_V>();
+Add(r[16],r[16],t,16);PipeBarrier<PIPE_V>();
+Sub(i[48],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[96],r[64],t,16);PipeBarrier<PIPE_V>();
+Add(r[64],r[64],t,16);PipeBarrier<PIPE_V>();
+Sub(i[96],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[64],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[80],t,16);PipeBarrier<PIPE_V>();
+Add(r[80],r[80],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[80],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[80],i[80],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_15(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(k)*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[64],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[64],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[64],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[64],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[64],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[64],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[80],r[16],t,16);PipeBarrier<PIPE_V>();
+Add(r[16],r[16],t,16);PipeBarrier<PIPE_V>();
+Sub(i[80],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[96],r[32],t,16);PipeBarrier<PIPE_V>();
+Add(r[32],r[32],t,16);PipeBarrier<PIPE_V>();
+Sub(i[96],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[32],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[48],t,16);PipeBarrier<PIPE_V>();
+Add(r[48],r[48],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[48],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[48],i[48],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_16(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=l*8+((k&1)*4+(k&2)+((k&4)/4));r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[16],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[16],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[16],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[16],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[16],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[16],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[48],r[32],t,16);PipeBarrier<PIPE_V>();
+Add(r[32],r[32],t,16);PipeBarrier<PIPE_V>();
+Sub(i[48],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[32],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[80],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[80],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[80],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[80],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[80],r[64],t,16);PipeBarrier<PIPE_V>();
+Add(r[64],r[64],t,16);PipeBarrier<PIPE_V>();
+Sub(i[80],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[64],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[96],t,16);PipeBarrier<PIPE_V>();
+Add(r[96],r[96],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[96],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[96],i[96],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=l*8+k;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_17(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=l*8+k;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[32],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[32],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[32],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[32],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[32],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[32],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[48],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[48],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[48],r[16],t,16);PipeBarrier<PIPE_V>();
+Add(r[16],r[16],t,16);PipeBarrier<PIPE_V>();
+Sub(i[48],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[96],r[64],t,16);PipeBarrier<PIPE_V>();
+Add(r[64],r[64],t,16);PipeBarrier<PIPE_V>();
+Sub(i[96],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[64],i[64],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[80],t,16);PipeBarrier<PIPE_V>();
+Add(r[80],r[80],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[80],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[80],i[80],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=l*8+k;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_18(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=l*8+k;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(t,r[64],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[64],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[64],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[64],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[64],r[0],t,16);PipeBarrier<PIPE_V>();
+Add(r[0],r[0],t,16);PipeBarrier<PIPE_V>();
+Sub(i[64],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[0],i[0],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[80],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[80],r[16],t,16);PipeBarrier<PIPE_V>();
+Add(r[16],r[16],t,16);PipeBarrier<PIPE_V>();
+Sub(i[80],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[16],i[16],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[96],(half)0.000000000000f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[96],(half)1.000000000000f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[96],r[32],t,16);PipeBarrier<PIPE_V>();
+Add(r[32],r[32],t,16);PipeBarrier<PIPE_V>();
+Sub(i[96],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[32],i[32],t[16],16);PipeBarrier<PIPE_V>();
+Muls(t,r[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[32],i[112],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Sub(t,t,t[32],16);PipeBarrier<PIPE_V>();
+Muls(t[16],i[112],(half)-0.707106781187f,16);PipeBarrier<PIPE_V>();
+Muls(t[48],r[112],(half)0.707106781187f,16);PipeBarrier<PIPE_V>();
+Add(t[16],t[16],t[48],16);PipeBarrier<PIPE_V>();
+Sub(r[112],r[48],t,16);PipeBarrier<PIPE_V>();
+Add(r[48],r[48],t,16);PipeBarrier<PIPE_V>();
+Sub(i[112],i[48],t[16],16);PipeBarrier<PIPE_V>();
+Add(i[48],i[48],t[16],16);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=l*8+k;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}
+extern "C" __global__ __aicore__ void fft_step_19(GM_ADDR input,GM_ADDR weight,GM_ADDR output){
+GlobalTensor<half> x,h,y;x.SetGlobalBuffer((__gm__ half*)input);h.SetGlobalBuffer((__gm__ half*)weight);y.SetGlobalBuffer((__gm__ half*)output);
+TPipe pipe;TBuf<TPosition::VECCALC> buf;pipe.InitBuffer(buf,2560);auto raw=buf.Get<half>();auto wh=raw[128];auto r=raw[256];auto i=raw[384];auto r2=raw[512];auto i2=raw[640];auto hr=raw[768];auto hi=raw[896];auto t=raw[1024];
+for(int tile=GetBlockIdx();tile<8;tile+=GetBlockNum()){
+Duplicate(r,(half)0,768);PipeBarrier<PIPE_ALL>();
+DataCopy(raw,x[tile*128],128);PipeBarrier<PIPE_ALL>();
+for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=(k)*8+l;r.SetValue(k*16+l,raw.GetValue(2*p));i.SetValue(k*16+l,raw.GetValue(2*p+1));}
+PipeBarrier<PIPE_ALL>();
+Muls(r,r,(half)0.001953125f,128);PipeBarrier<PIPE_V>();
+Muls(i,i,(half)0.001953125f,128);PipeBarrier<PIPE_V>();
+PipeBarrier<PIPE_ALL>();for(int k=0;k<8;k++)for(int l=0;l<8;l++){int p=k*8+l;raw.SetValue(2*p,r.GetValue(k*16+l));raw.SetValue(2*p+1,i.GetValue(k*16+l));}
+PipeBarrier<PIPE_ALL>();
+DataCopy(y[tile*128],raw,128);PipeBarrier<PIPE_ALL>();}}

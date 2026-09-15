@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sage-fft-migration"
+version = "0.3.0"
+authors = [{name = "even"}]
+maintainers = [{name = "even"}]
+description = "Hierarchical FFT transformation and compiler-constrained LLM control for CUDA-to-NPU migration"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24,<3"]
+keywords = ["fft", "ascend", "cuda", "compiler", "kernel-fusion"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering",
+]
+
+[project.optional-dependencies]
+remote = ["paramiko>=3.4,<5"]
+plots = ["matplotlib>=3.7,<4", "PyMuPDF>=1.24.10,<2"]
+dev = ["pytest>=8,<9", "ruff>=0.9,<1", "build>=1.2,<2"]
+
+[project.scripts]
+sage = "sage_fft.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sage_fft = ["CMakeLists.txt", "PROTOCOL*.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = ["hardware: requires an explicitly configured GPU or NPU", "slow: extended CPU semantic validation"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E9", "F63", "F7", "F82"]

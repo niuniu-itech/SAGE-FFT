@@ -1,0 +1,55 @@
+# Generated experiment data and machine configuration
+/runs/
+/artifacts/
+/evidence/
+/data/
+/build/
+/dist/
+/local/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+*.bin
+*.bin.after
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+*.a
+*.lib
+*.log
+executable
+/sage_fft
+reference
+CMakeCache.txt
+CMakeFiles/
+
+# Python environments and tools
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.whl
+
+# Editors and OS metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local study records and exports
+/results/
+/evidence/
+*.zip
+*.tar.gz

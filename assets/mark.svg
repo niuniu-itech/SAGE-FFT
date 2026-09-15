@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="448" viewBox="0 0 512 448" role="img" aria-labelledby="title desc">
+<title id="title">SAGE-FFT butterfly</title>
+<desc id="desc">Two outward-facing F letterforms form butterfly wings around a T-shaped body.</desc>
+<g transform="translate(17 9)"><g transform="rotate(-7 256 244)">
+      <path fill="#139BB5" d="M25 56 L185 0 Q193 -3 188 9 L164 58 L63 90 L52 128 L135 102 Q146 98 141 111 L123 151 L39 178 L20 228 Q18 234 12 229 L0 211 Z" transform="translate(234 100) scale(-1 1)"/>
+      <path fill="#7651D1" d="M25 56 L185 0 Q193 -3 188 9 L164 58 L63 90 L52 128 L135 102 Q146 98 141 111 L123 151 L39 178 L20 228 Q18 234 12 229 L0 211 Z" transform="translate(278 100)"/>
+      <path fill="#263148" d="M232 164 Q256 174 280 164 L276 181 L263 183 L263 327 Q263 341 256 357 Q249 341 249 327 L249 183 L236 181 Z"/>
+    </g></g>
+</svg>

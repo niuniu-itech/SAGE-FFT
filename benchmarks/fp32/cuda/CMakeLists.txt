@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.18)
+project(sage_cuda_fft LANGUAGES CXX CUDA)
+find_package(CUDAToolkit REQUIRED)
+add_executable(sage_cuda_fft diagnose.cu)
+target_compile_features(sage_cuda_fft PRIVATE cxx_std_17)
+set_target_properties(sage_cuda_fft PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
+target_link_libraries(sage_cuda_fft PRIVATE CUDA::cufft CUDA::cudart)
