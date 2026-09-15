@@ -11,6 +11,8 @@
 LLM-directed hierarchical FFT transformation and scheduling for CUDA-to-NPU migration.
 Version **0.3.0**. Author and maintainer: **even**.
 
+**Paper status: Submitted to ICASSP 2027.**
+
 SAGE-FFT imports registered CUDA FFT pipelines into an FFT contract and stage IR.
 The compiler checks grouping, epilogue fusion and core mapping, then emits Ascend C
 sources and launch plans. An optional model selects legal transformations during

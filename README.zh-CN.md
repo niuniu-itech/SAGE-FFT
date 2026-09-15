@@ -10,6 +10,8 @@
 
 版本 **0.3.0**，作者与维护者：**even**。
 
+**论文状态：已投稿 ICASSP 2027。**
+
 SAGE-FFT 将已注册的 CUDA FFT pipeline 导入 FFT contract 和 stage IR，
 由编译器检查分组、尾部算子融合和核映射，再生成 Ascend C 源码与执行计划。
 LLM 参与离线搜索，部署后的 FFT 执行不调用模型。
