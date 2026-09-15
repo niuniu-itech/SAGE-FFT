@@ -18,6 +18,62 @@ The compiler checks grouping, epilogue fusion and core mapping, then emits Ascen
 sources and launch plans. An optional model selects legal transformations during
 offline tuning; deployed FFT execution does not call the model.
 
+## Overview
+
+The FFT contract and stage IR connect epilogue fusion, stage grouping and core
+mapping. The LLM selects from legal actions using target feedback; compiler
+checks and target validation determine which execution plans are accepted.
+
+<p align="center">
+  <a href="assets/paper/figure2_overview.png"><img src="assets/paper/figure2_overview.png" alt="SAGE-FFT overview: cuFFT semantics, three transformation levels, indexed LLM exploration and NPU execution" width="1000"></a>
+</p>
+
+*Fig. 2 from the paper. The separate local-fusion extension goes beyond the
+per-axis FP32 catalog.*
+
+## Results from the paper
+
+**Fewer launches at the same core allocation.** On Ascend 310P1, the FP32
+8 × 8 × 8 weighted FFT pipeline drops from **20 to 6 launches** and from
+**110.4 to 44.0 μs**, a **2.51× speedup**. Both NPU implementations use eight
+AI Core blocks. Timings cover the complete resident-data pipeline.
+
+<p align="center">
+  <a href="assets/paper/figure1_motivation.png"><img src="assets/paper/figure1_motivation.png" alt="FP32 migration example: Staged NPU takes 110.4 microseconds and SAGE-FFT takes 44.0 microseconds at eight blocks" width="720"></a>
+</p>
+
+*Fig. 1 from the paper. CUDA supplies the source pipeline; the measured speedup
+compares the two implementations on the same NPU.*
+
+**Structural gains across 1D, 2D and 3D workloads.** Stage grouping adds
+**1.84–2.25×** beyond scheduling. The complete scheduling, grouping and fusion
+tier reaches **3.18–10.93×** over the **one-block Staged baseline**; this total
+includes the benefit of core allocation.
+
+<p align="center">
+  <a href="assets/paper/figure3_ablation.png"><img src="assets/paper/figure3_ablation.png" alt="Ablation on W1-W7: successive scheduling, grouping and fusion tiers improve NPU pipeline speedup" width="720"></a>
+</p>
+
+*Fig. 3 from the paper. Grouping supplies the largest structural gain beyond
+scheduling. Click any figure to view the full-resolution image.*
+
+<details>
+<summary>Workloads and comparison conditions</summary>
+
+| Cases | FFT shapes |
+| --- | --- |
+| W1, W2 (1D) | 64 and 256, each with batch 4 |
+| W3, W4 (2D) | 8 × 16 and 16 × 32 |
+| W5–W7 (3D) | 4 × 8 × 8, 8 × 8 × 8 and 8 × 16 × 16 |
+
+These are FP32 measurements on Ascend 310P1. Fig. 1 and Fig. 3 come from
+different timing studies: Fig. 1 fixes both implementations at eight blocks,
+whereas Fig. 3 normalizes its cumulative tiers to a one-block Staged baseline.
+Model inference and compilation are outside the reported target latency.
+See the [reproduction guide](docs/REPRODUCIBILITY.md) for executable experiments.
+
+</details>
+
 ## Install and test
 
 Python 3.10 or newer is required. From this directory:
@@ -78,8 +134,8 @@ The `.env.example` file is documentation and is not loaded automatically.
 | `docs/` | Architecture, configuration and experiment instructions |
 | `scripts/` | Source checks and audits of caller-generated results |
 
-This source distribution contains no recorded experiments, model conversations,
-personal machine configuration or paper-version archives. Benchmark commands
+This source distribution includes selected paper figures, but no raw experiment
+logs, model conversations, personal machine configuration or paper-version archives. Benchmark commands
 create new results in the caller's configured workspace. Seeds do not guarantee
 identical hosted-model decisions; report measured outcomes and failed proposals.
 
