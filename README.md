@@ -36,13 +36,6 @@ per-axis FP32 catalog.*
 **110.4 to 44.0 μs**, a **2.51× speedup**. Both NPU implementations use eight
 AI Core blocks. Timings cover the complete resident-data pipeline.
 
-<p align="center">
-  <a href="assets/paper/figure1_motivation.png"><img src="assets/paper/figure1_motivation.png" alt="FP32 migration example: Staged NPU takes 110.4 microseconds and SAGE-FFT takes 44.0 microseconds at eight blocks" width="720"></a>
-</p>
-
-*Fig. 1 from the paper. CUDA supplies the source pipeline; the measured speedup
-compares the two implementations on the same NPU.*
-
 **Structural gains across 1D, 2D and 3D workloads.** Stage grouping adds
 **1.84–2.25×** beyond scheduling. The complete scheduling, grouping and fusion
 tier reaches **3.18–10.93×** over the **one-block Staged baseline**; this total
