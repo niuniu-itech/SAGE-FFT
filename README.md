@@ -48,6 +48,29 @@ includes the benefit of core allocation.
 *Fig. 3 from the paper. Grouping supplies the largest structural gain beyond
 scheduling. Click any figure to view the full-resolution image.*
 
+**Search behavior across seeds.** The 8² and 8³ controls compare search policies
+over 12 proposals for each of three seeds. Lower incumbent/reference latency is
+better. True history does not consistently outperform absent or permuted history.
+
+<p align="center">
+  <a href="assets/paper/figure4_policy.png"><img src="assets/paper/figure4_policy.png" alt="Search trajectories on 8 squared and 8 cubed workloads across seeds 41–43, comparing search policies and history controls; lower latency ratios are better" width="880"></a>
+</p>
+
+*Fig. 4 from the paper. Search trajectories show variation across policies,
+history controls and seeds.*
+
+**Paired transformation gains.** Comparisons on 8² isolate
+grouping, epilogue fusion, core scaling and line packing. Stage grouping gives
+a **1.92× median speedup**, while scaling from four to eight blocks gives only
+**1.01×**, showing diminishing returns from additional parallelism.
+
+<p align="center">
+  <a href="assets/paper/figure5_boundaries.png"><img src="assets/paper/figure5_boundaries.png" alt="Paired speedup distributions on 8 squared: stage grouping has a 1.92 times median gain and four-to-eight-block scaling has a 1.01 times median gain" width="880"></a>
+</p>
+
+*Fig. 5 from the paper. Values above one indicate improvement; stage grouping
+provides the largest median gain among the paired changes.*
+
 <details>
 <summary>Workloads and comparison conditions</summary>
 
@@ -57,9 +80,10 @@ scheduling. Click any figure to view the full-resolution image.*
 | W3, W4 (2D) | 8 × 16 and 16 × 32 |
 | W5–W7 (3D) | 4 × 8 × 8, 8 × 8 × 8 and 8 × 16 × 16 |
 
-These are FP32 measurements on Ascend 310P1. Fig. 1 and Fig. 3 come from
-different timing studies: Fig. 1 fixes both implementations at eight blocks,
-whereas Fig. 3 normalizes its cumulative tiers to a one-block Staged baseline.
+These are FP32 measurements on Ascend 310P1. The eight-block latency comparison
+and Fig. 3 come from different timing studies. Fig. 3 normalizes its cumulative
+tiers to a one-block Staged baseline; Fig. 5 isolates individual changes through
+paired comparisons. Fig. 4 reports incumbent latency relative to the reference.
 Model inference and compilation are outside the reported target latency.
 See the [reproduction guide](docs/REPRODUCIBILITY.md) for executable experiments.
 
